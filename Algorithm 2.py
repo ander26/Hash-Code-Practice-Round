@@ -1,4 +1,9 @@
 import random
+import os
+import numpy as np
+
+WRITING_FILE = "./Results/resulte.txt"
+READING_FILE = "./Dataset/e_also_big.in"
 
 def read_file(filepath):
 	pizzas_aux = []
@@ -105,6 +110,20 @@ def mutation(population_matrix, pmutation, types):
 
 	return offsprings
 
+def write_result (name_file, ordered_pizzas):
+    try:
+        file = open(name_file, "x")
+    except:
+        os.remove(name_file)
+        file = open(name_file, "x")
+    file.write(str(len(ordered_pizzas)) + "\n")
+    counter = 0
+    for pizza in ordered_pizzas:
+        file.write(str(pizza))
+        if counter != len(ordered_pizzas) -1: 
+            file.write(" ")
+        counter +=1 
+
 def main():
 	max_values = []
 	max_inds = []
@@ -120,7 +139,7 @@ def main():
 	evaluation = evaluate(population_matrix, pizzas)
 	for g in range(generations):
 		index_parents = tournament_selection(population_matrix, population_size, evaluation, tournament_size, types)
-		population_matrix = initialize_population_matrix(population_size, types, pizzas, slices)	
+		#population_matrix = initialize_population_matrix(population_size, types, pizzas, slices)	
 		#offspring1 = crossover(population_matrix, prob_crossover, index_parents)
 		#offspring2 = mutation(population_matrix, prob_mutation, types)
 		#population_matrix = offspring2
@@ -130,6 +149,12 @@ def main():
 		
 	print(max_values)
 	print(max_inds)
+	index = np.argmax(max_values)
+  	x = np.array(max_inds[index])
+  	array = np.sort(x).tolist()
+
+	write_result (WRITING_FILE, array)
+
 
 if __name__ == "__main__":
 	main()
