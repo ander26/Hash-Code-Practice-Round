@@ -1,33 +1,46 @@
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileWriter;
 import java.util.*;
 
 public class PizzaProblem {
+
+    private static final String READING_FILE = "dataset/d_quite_big.in";
+    private static final String WRITING_FILE = "results/resultD.txt";
+
     public static void main(String[] args) {
-        String filepath = "/home/unai/IdeaProjects/HashCode_Practice_Round/datasets/e_also_big.in";
-        readFile(filepath);
+
+        readFile(READING_FILE);
 
         DataStructure dataStructure = DataStructure.getMyDataStructure();
 
         initializePopulationMatrix();
+
         List<List<Integer>> populationMatrix = dataStructure.getPopulationMatrix();
         List<Integer> pizzas = dataStructure.getPizzas();
         List<Integer> evaluation = evaluate(populationMatrix, pizzas);
+
         List<List<Integer>> maxInds = new ArrayList<>();
         List<Integer> maxValues = new ArrayList<>();
+
         for (int g = 0 ; g < dataStructure.getGenerations() ; g++) {
             maxInds.add(populationMatrix.get(evaluation.indexOf(Collections.max(evaluation))));
             maxValues.add(Collections.max(evaluation));
+            populationMatrix = mutate(evaluation, populationMatrix);
             evaluation = evaluate(populationMatrix, pizzas);
         }
 
-        System.out.println("Max Inds: ");
-        printListOfLists(maxInds);
+        //System.out.println("Max Inds: ");
+        //printListOfLists(maxInds);
 
         System.out.println("");
 
         System.out.println("Max Values: ");
         printList(maxValues);
+
+        System.out.println("Best Value: " + Collections.max(evaluation));
+
+        writeFile(WRITING_FILE, maxInds.get(maxValues.indexOf(Collections.max(maxValues))));
 
     }
 
@@ -54,6 +67,52 @@ public class PizzaProblem {
         }
     }
 
+    public static List<List<Integer>> mutate (List<Integer> evaluation, List<List<Integer>> populationMatrix) {
+        DataStructure dataStructure = DataStructure.getMyDataStructure();
+        for (int i = 0; i < 10; i++) {
+            int maxValue = Collections.max(evaluation);
+            List<Integer> individual = new ArrayList<Integer>(populationMatrix.get(evaluation.indexOf(Collections.max(evaluation))));
+            Random random = new Random();
+            int positionChange = random.nextInt (individual.size());
+            boolean incorrect = true;
+            while(incorrect) {
+                int randomType = random.nextInt(dataStructure.getTypes());
+                if (!individual.contains(randomType)) {
+                    individual.set(positionChange, randomType);
+                    incorrect = false;
+                }
+            }
+            if (fitness(individual, dataStructure.getPizzas()) > maxValue && fitness(individual, dataStructure.getPizzas()) <=
+                    dataStructure.getSlices()) {
+                populationMatrix.set(evaluation.indexOf(Collections.max(evaluation)), individual);
+            }
+            evaluation.remove(evaluation.indexOf(Collections.max(evaluation)));
+        }
+        return populationMatrix;
+    }
+
+    public static void writeFile(String filepath, List<Integer> result) {
+        try {
+            File myObj = new File(filepath);
+            if (!myObj.createNewFile()) {
+                myObj.delete();
+                myObj.createNewFile();
+            }
+            FileWriter myWriter = new FileWriter(filepath);
+            myWriter.write(result.size() + "\n");
+            for (int i = 0; i < result.size(); i++) {
+                myWriter.write(result.get(i) + "");
+                if (i != result.size() -1) {
+                    myWriter.write(" ");
+                }
+            }
+            myWriter.close();
+        } catch (Exception e) {
+            System.out.println("An error occurred.");
+            e.printStackTrace();
+        }
+    }
+
     public static List<Integer> convertPizzasToInt(String[] line) {
         List<Integer> pizzas = new ArrayList<>();
         for (int i = 0 ; i < line.length ; i++) {
@@ -64,14 +123,10 @@ public class PizzaProblem {
 
     public static void initializePopulationMatrix() {
         DataStructure dataStructure = DataStructure.getMyDataStructure();
-        int sumSlices = 0;
         List<Integer> sample;
-        List<Integer> pizzas = dataStructure.getPizzas();
         for (int i = 0 ; i < dataStructure.getPopulationMatrix().size() ; i++) {
             sample = createSample();
-            for (int j = 0 ; j < dataStructure.getPopulationMatrix().get(i).size() ; j++) {
-                dataStructure.getPopulationMatrix().set(i, sample);
-            }
+            dataStructure.getPopulationMatrix().set(i, sample);
         }
     }
 

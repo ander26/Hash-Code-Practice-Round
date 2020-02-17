@@ -11,8 +11,8 @@ public class DataStructure {
     private static DataStructure myDataStructure;
 
     private DataStructure() {
-        this.generations = 10;
-        this.populationSize = 100;
+        this.generations = 500;
+        this.populationSize = 500;
         this.populationMatrix = createEmptyPopulationMatrix();
     }
 
